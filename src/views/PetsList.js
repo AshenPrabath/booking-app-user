@@ -65,6 +65,9 @@ const PetsList = () => {
   return (
     <div>
       <h2>Pets List</h2>
+      <Button variant="contained" color="primary" onClick={handleClickOpen}>
+        Create Pet
+      </Button>
       <Grid container spacing={2}>
         {Array.isArray(pets) && pets.length > 0 ? (
           pets.map((pet) => (
@@ -84,9 +87,7 @@ const PetsList = () => {
         )}
       </Grid>
       
-      <Button variant="contained" color="primary" onClick={handleClickOpen}>
-        Create Pet
-      </Button>
+      
 
       {/* Dialog Box for Creating Pet */}
       <Dialog open={open} onClose={handleClose}>
