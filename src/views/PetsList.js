@@ -1,9 +1,12 @@
 // /views/PetsList.js
 import React, { useEffect, useState } from 'react';
-import { useStoreState, useStoreActions } from 'easy-peasy';
-import { CircularProgress, Grid, Card, CardContent, Typography, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
-import { loadPets} from '../controllers/appointmentController';
+import { useStoreState } from 'easy-peasy';
+import { CircularProgress, Grid, Card, CardContent, Typography, Button, TextField, Dialog, DialogActions, DialogContent, DialogTitle, Fab, Box, Avatar } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import PetsIcon from '@mui/icons-material/Pets';  // Import the Pets Icon
+import { loadPets } from '../controllers/appointmentController';
 import axios from 'axios';
+
 const PetsList = () => {
   const { pets, loading_pets, error } = useStoreState((state) => state);  // Get pets from the store
   const [open, setOpen] = useState(false);  // For the dialog box
@@ -27,8 +30,9 @@ const PetsList = () => {
   const handleChange = (e) => {
     setPetDetails({ ...petDetails, [e.target.name]: e.target.value });
   };
+
   const getAuthToken = () => {
-    return localStorage.getItem('token');  
+    return localStorage.getItem('token');
   };
 
   const handleSubmit = async (e) => {
@@ -40,9 +44,8 @@ const PetsList = () => {
     };
 
     try {
-    const token = getAuthToken();
-    console.log(token);
-    await axios.post(
+      const token = getAuthToken();
+      await axios.post(
         'http://localhost:5001/api/pets/register',  // API URL
         petData,  // Payload (pet data)
         {
@@ -52,46 +55,103 @@ const PetsList = () => {
           },
         }
       );
-  
+
       loadPets(userId);  // Reload pets after creating a new one
       handleClose();  // Close the dialog after submission
     } catch (error) {
       console.error('Error creating pet', error);
     }
   };
-  if (loading_pets) return <CircularProgress />;
+
+  if (loading_pets) return <CircularProgress sx={{ display: 'block', margin: '20px auto' }} />;
   if (error) return <div>{error}</div>;
 
   return (
-    <div>
-      <h2>Pets List</h2>
-      <Button variant="contained" color="primary" onClick={handleClickOpen}>
-        Create Pet
-      </Button>
-      <Grid container spacing={2}>
+    <Box sx={{ backgroundColor: '#f8f4ff', minHeight: '100vh', padding: '40px' }}>
+      {/* Header Section */}
+      <Box
+        sx={{
+          textAlign: 'center',
+          marginBottom: 4,
+        }}
+      >
+        <Avatar
+          sx={{
+            backgroundColor: '#6a1b9a',
+            width: 60,
+            height: 60,
+            margin: '0 auto',
+            mb: 2,
+          }}
+        >
+          <PetsIcon sx={{ fontSize: 40, color: 'white' }} />
+        </Avatar>
+        <Typography
+          variant="h4"
+          sx={{
+            color: '#4a148c',
+            fontWeight: 'bold',
+            marginBottom: 1,
+          }}
+        >
+          My Pets
+        </Typography>
+        <Typography variant="body1" sx={{ color: '#6a1b9a' }}>
+          View and manage your Pets with ease.
+        </Typography>
+      </Box>
+
+      {/* Pets Grid */}
+      <Grid container spacing={3}>
         {Array.isArray(pets) && pets.length > 0 ? (
           pets.map((pet) => (
             <Grid item xs={12} sm={6} md={4} key={pet._id}>
-              <Card>
-                <CardContent>
-                  <Typography variant="h6">{pet.name}</Typography>
+              <Card sx={{ boxShadow: '0px 4px 15px rgba(0, 0, 0, 0.1)', borderRadius: 3, backgroundColor: '#fff' }}>
+                <CardContent sx={{ padding: 3 }}>
+                  <Typography variant="h6" sx={{ color: '#4a148c', fontWeight: 'bold', marginBottom: 1 }}>
+                    {pet.name}
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary" sx={{ marginBottom: 0.5 }}>
+                    <strong>Type:</strong> {pet.type}
+                  </Typography>
+                  <Typography variant="body2" color="textSecondary" sx={{ marginBottom: 0.5 }}>
+                    <strong>Breed:</strong> {pet.breed}
+                  </Typography>
                   <Typography variant="body2" color="textSecondary">
-                    {pet.breed} - {pet.age} years old
+                    <strong>Age:</strong> {pet.age} years old
                   </Typography>
                 </CardContent>
               </Card>
             </Grid>
           ))
         ) : (
-          <div>No Pets Available</div>
+          <Grid item xs={12}>
+            <Typography variant="body1" align="center" sx={{ color: '#6a1b9a', fontSize: '1.2rem' }}>
+              No pets found. Please add a pet.
+            </Typography>
+          </Grid>
         )}
       </Grid>
-      
-      
+
+      {/* Floating Action Button */}
+      <Fab
+        color="primary"
+        aria-label="add"
+        onClick={handleClickOpen}
+        sx={{
+          position: 'fixed',
+          bottom: 16,
+          right: 16,
+          backgroundColor: '#49416D',
+          '&:hover': { backgroundColor: '#6a1b9a' },
+        }}
+      >
+        <AddIcon />
+      </Fab>
 
       {/* Dialog Box for Creating Pet */}
       <Dialog open={open} onClose={handleClose}>
-        <DialogTitle>Create a New Pet</DialogTitle>
+        <DialogTitle sx={{ backgroundColor: '#49416D', color: '#fff' }}>Create a New Pet</DialogTitle>
         <DialogContent>
           <TextField
             label="Pet Name"
@@ -136,7 +196,7 @@ const PetsList = () => {
           </Button>
         </DialogActions>
       </Dialog>
-    </div>
+    </Box>
   );
 };
 

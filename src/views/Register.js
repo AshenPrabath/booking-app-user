@@ -1,32 +1,42 @@
-// /views/Register.js
 import React, { useState } from 'react';
 import { useStoreActions } from 'easy-peasy';
-import { Button, TextField, Grid, CircularProgress, Box, Typography } from '@mui/material';
+import { Button, TextField, Box, Typography, Avatar, CircularProgress } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import PetsIcon from '@mui/icons-material/Pets';
 
 const Register = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [phone, setPhone] = useState('');
   const [city, setCity] = useState('');
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
 
   const registerUser = useStoreActions((actions) => actions.registerUser);
-  const loading = useStoreActions((actions) => actions.loading);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    registerUser({ name, email, password, phone, city })
-      .then(() => {
-        setError('');
-        alert("Login successful! Please login")
-        navigate('/'); // Redirect to home or login after successful registration
-      })
-      .catch(() => {
-        setError('Registration failed');
-      });
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      await registerUser({ name, email, password, phone, city });
+      setError('');
+      alert('Registration successful! Please login.');
+      navigate('/');
+    } catch {
+      setError('Registration failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -37,21 +47,65 @@ const Register = () => {
         justifyContent: 'center',
         alignItems: 'center',
         height: '100vh',
-        backgroundColor: '#f4f7fc',
+        backgroundColor: '#f8f4ff',
+        padding: 2,
       }}
     >
-      <Typography variant="h4" sx={{ marginBottom: 3, color: '#333' }}>
-        Register
-      </Typography>
-      <form onSubmit={handleSubmit} style={{ width: '100%', maxWidth: 450 }}>
-        <Grid container spacing={2}>
-          <Grid item xs={12}>
+      <form onSubmit={handleSubmit}>
+        <Box
+          sx={{
+            width: '100%',
+            maxWidth: 600,
+            padding: 3,
+            backgroundColor: 'white',
+            borderRadius: 2,
+            boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.1)',
+            textAlign: 'center',
+          }}
+        >
+          <Avatar
+            sx={{
+              backgroundColor: '#49416D',
+              width: 60,
+              height: 60,
+              mb: 2,
+              margin: '0 auto',
+            }}
+          >
+            <PetsIcon sx={{ fontSize: 40, color: 'white' }} />
+          </Avatar>
+          <Typography
+            variant="h4"
+            sx={{
+              marginBottom: 1,
+              color: '#4a148c',
+              fontWeight: 'bold',
+            }}
+          >
+            Welcome to Pet Palace
+          </Typography>
+          <Typography
+            variant="body1"
+            sx={{
+              marginBottom: 3,
+              color: '#49416D',
+            }}
+          >
+            Please fill out the form to create your account.
+          </Typography>
+          {error && (
+            <Typography variant="body2" sx={{ color: 'red', marginBottom: 2 }}>
+              {error}
+            </Typography>
+          )}
+          <Box sx={{ marginBottom: 2 }}>
             <TextField
               label="Name"
-              fullWidth
               value={name}
               onChange={(e) => setName(e.target.value)}
+              fullWidth
               required
+              placeholder="Enter your name"
               variant="outlined"
               sx={{
                 '& .MuiOutlinedInput-root': {
@@ -59,14 +113,15 @@ const Register = () => {
                 },
               }}
             />
-          </Grid>
-          <Grid item xs={12}>
+          </Box>
+          <Box sx={{ marginBottom: 2 }}>
             <TextField
               label="Email"
-              fullWidth
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              fullWidth
               required
+              placeholder="Enter your email"
               variant="outlined"
               sx={{
                 '& .MuiOutlinedInput-root': {
@@ -74,14 +129,15 @@ const Register = () => {
                 },
               }}
             />
-          </Grid>
-          <Grid item xs={12}>
+          </Box>
+          <Box sx={{ marginBottom: 2 }}>
             <TextField
               label="Phone Number"
-              fullWidth
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
+              fullWidth
               required
+              placeholder="Enter your phone number"
               variant="outlined"
               sx={{
                 '& .MuiOutlinedInput-root': {
@@ -89,14 +145,15 @@ const Register = () => {
                 },
               }}
             />
-          </Grid>
-          <Grid item xs={12}>
+          </Box>
+          <Box sx={{ marginBottom: 2 }}>
             <TextField
               label="City Name"
-              fullWidth
               value={city}
               onChange={(e) => setCity(e.target.value)}
+              fullWidth
               required
+              placeholder="Enter your city name"
               variant="outlined"
               sx={{
                 '& .MuiOutlinedInput-root': {
@@ -104,15 +161,16 @@ const Register = () => {
                 },
               }}
             />
-          </Grid>
-          <Grid item xs={12}>
+          </Box>
+          <Box sx={{ marginBottom: 2 }}>
             <TextField
               label="Password"
               type="password"
-              fullWidth
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              fullWidth
               required
+              placeholder="Enter your password"
               variant="outlined"
               sx={{
                 '& .MuiOutlinedInput-root': {
@@ -120,33 +178,43 @@ const Register = () => {
                 },
               }}
             />
-          </Grid>
-          {error && (
-            <Grid item xs={12}>
-              <Typography variant="body2" sx={{ color: 'red', textAlign: 'center' }}>
-                {error}
-              </Typography>
-            </Grid>
-          )}
-          <Grid item xs={12}>
-            <Button
-              variant="contained"
-              type="submit"
+          </Box>
+          <Box sx={{ marginBottom: 2 }}>
+            <TextField
+              label="Re-enter Password"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
               fullWidth
+              required
+              placeholder="Re-enter your password"
+              variant="outlined"
               sx={{
-                padding: '12px',
-                backgroundColor: '#007bff',
-                '&:hover': {
-                  backgroundColor: '#0056b3',
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2,
                 },
-                marginTop: 2,
               }}
-              disabled={loading}
-            >
-              {loading ? <CircularProgress size={24} color="white" /> : 'Register'}
-            </Button>
-          </Grid>
-        </Grid>
+            />
+          </Box>
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            sx={{
+              padding: '10px',
+              backgroundColor: '#49416D',
+              '&:hover': {
+                backgroundColor: '#49416D',
+              },
+              marginBottom: 2,
+              fontWeight: 'bold',
+              fontSize: '16px',
+            }}
+            disabled={loading}
+          >
+            {loading ? <CircularProgress size={24} color="inherit" /> : 'Register'}
+          </Button>
+        </Box>
       </form>
     </Box>
   );

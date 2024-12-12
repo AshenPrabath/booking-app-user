@@ -67,28 +67,37 @@ const storeModel = {
 
   // Thunks for API calls
   loginUser: thunk(async (actions, { email, password }) => {
-    actions.setLoading(true);
-    try {
-      const response = await axios.post('/api/users/login', { email, password });
-      const { token, user_id } = response.data;
+  actions.setLoading(true);
+  try {
+    const response = await axios.post('/api/users/login', { email, password });
+    const { token, user_id } = response.data;
 
-      // Store the token and user_id in the store
-      actions.setToken(token);
-      actions.setUserId(user_id);
-      actions.setUser({ email });
+    actions.setToken(token);
+    actions.setUserId(user_id);
+    actions.setUser({ email });
 
-      // Save the token, user_id, and user information to localStorage
-      localStorage.setItem('token', token);
-      localStorage.setItem('user_id', user_id);
-      localStorage.setItem('user', JSON.stringify({ email }));
+    // Save to localStorage
+    localStorage.setItem('token', token);
+    localStorage.setItem('user_id', user_id);
+    localStorage.setItem('user', JSON.stringify({ email }));
 
-      console.log(user_id);
-    } catch (error) {
+    actions.setError(null); // Reset error state on successful login
+
+    console.log(user_id);
+    return { success: true }; // Indicate success
+  } catch (error) {
+    if (error.response && error.response.status === 401) {
+      actions.setError('Invalid email or password'); // Set specific error message
+    } else {
       actions.setError('Login failed');
-    } finally {
-      actions.setLoading(false);
     }
-  }),
+    return { success: false }; // Indicate failure
+  } finally {
+    actions.setLoading(false);
+  }
+}),
+
+
 
   registerUser: thunk(async (actions, { name, email, password ,phone,city}) => {
     actions.setLoading(true);
